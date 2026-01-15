@@ -1,0 +1,178 @@
+let empresaId = "EMPRESA_001";
+let usuarioId = "ADMIN_001";
+
+// 🔧 Persistencia
+let prestamos = JSON.parse(localStorage.getItem("prestamos")) || [];
+let clientes = JSON.parse(localStorage.getItem("clientes")) || [];
+let prestamoActivo = null;
+
+// 🔧 Guardar datos
+function guardarDatos(){
+  localStorage.setItem("prestamos", JSON.stringify(prestamos));
+  localStorage.setItem("clientes", JSON.stringify(clientes));
+}
+
+/* LOGIN */
+function login(){
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+}
+
+/* CLIENTES */
+function guardarCliente(){
+  if(!nombreCliente.value || !direccionCliente.value){
+    alert("Todos los campos son obligatorios");
+    return;
+  }
+
+  clientes.push({
+    id: Date.now(),
+    empresaId,
+    nombre: nombreCliente.value,
+    direccion: direccionCliente.value
+  });
+
+  guardarDatos();
+  alert("Cliente guardado");
+}
+
+/* PRÉSTAMOS */
+function crearPrestamo(){
+  if(!capital.value || !interes.value){
+    alert("Completa todos los campos");
+    return;
+  }
+
+  const prestamo = {
+    id: Date.now(),
+    empresaId,
+    capital: +capital.value,
+    interes: +interes.value,
+    tipo: tipoPago.value,
+    fechaEntrega: new Date().toISOString(),
+    estado: "Activo",
+    cobradorId: usuarioId,
+    historial:[]
+  };
+
+  prestamos.push(prestamo);
+  guardarDatos();
+  renderPrestamos(prestamos);
+  cargarDashboard();
+}
+
+/* LISTADO */
+function renderPrestamos(lista){
+  listaPrestamos.innerHTML = "";
+  lista.forEach(p=>{
+    listaPrestamos.innerHTML += `
+      <div>
+        Capital: RD$${p.capital} |
+        Estado: ${p.estado}
+        <button onclick="verHistorial(${p.id})">Ver</button>
+      </div>
+    `;
+  });
+}
+
+/* HISTORIAL */
+function verHistorial(id){
+  prestamoActivo = prestamos.find(p=>p.id===id);
+  if(!prestamoActivo) return;
+
+  historial.innerHTML = prestamoActivo.historial.length
+    ? prestamoActivo.historial.map(h=>`${h.tipo} - ${h.fecha}`).join("<br>")
+    : "Sin movimientos";
+
+  modal.classList.remove("hidden");
+}
+
+function cerrarModal(){
+  modal.classList.add("hidden");
+}
+
+/* FIRMA */
+let ctx = firmaCanvas.getContext("2d");
+let dibujando = false;
+
+firmaCanvas.onmousedown = e => {
+  dibujando = true;
+  ctx.beginPath();
+  ctx.moveTo(e.offsetX, e.offsetY);
+};
+
+firmaCanvas.onmouseup = ()=>dibujando=false;
+
+firmaCanvas.onmousemove = e =>{
+  if(dibujando){
+    ctx.lineTo(e.offsetX,e.offsetY);
+    ctx.stroke();
+  }
+};
+
+function limpiarFirma(){
+  ctx.clearRect(0,0,firmaCanvas.width,firmaCanvas.height);
+}
+
+/* PDF */
+function generarPDF(){
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
+
+  pdf.text("P&A Loans and Associates",20,20);
+  pdf.text(`Capital: RD$${prestamoActivo.capital}`,20,40);
+  pdf.text(`Interés: ${prestamoActivo.interes}%`,20,50);
+  pdf.addImage(firmaCanvas.toDataURL(),"PNG",20,70,100,30);
+  pdf.save("Contrato_PA_Loans.pdf");
+}
+
+/* DASHBOARD */
+let grafico = null;
+
+function cargarDashboard(){
+  let capitalTotal = 0;
+  let ganancia = 0;
+
+  prestamos.forEach(p=>{
+    capitalTotal += p.capital;
+    ganancia += p.capital * (p.interes / 100);
+  });
+
+  resumen.innerHTML = `
+    Capital Total: RD$${capitalTotal}<br>
+    Ganancia Estimada: RD$${ganancia}
+  `;
+
+  if(grafico) grafico.destroy();
+
+  grafico = new Chart(grafica,{
+    type:"bar",
+    data:{
+      labels:["Capital","Ganancia"],
+      datasets:[{ data:[capitalTotal, ganancia] }]
+    }
+  });
+}
+
+/* FILTROS */
+function filtrar(){
+  if(!desde.value || !hasta.value){
+    renderPrestamos(prestamos);
+    return;
+  }
+
+  const d = new Date(desde.value);
+  const h = new Date(hasta.value);
+
+  const r = prestamos.filter(p=>{
+    const f = new Date(p.fechaEntrega);
+    return f >= d && f <= h;
+  });
+
+  renderPrestamos(r);
+}
+
+/* CARGA INICIAL */
+renderPrestamos(prestamos);
+cargarDashboard();
+

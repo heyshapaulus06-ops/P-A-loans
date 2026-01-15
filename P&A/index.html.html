@@ -1,0 +1,99 @@
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>P&A Loans and Associates</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- LIBRERÍAS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body>
+
+<header>
+  <h1>P&A Loans and Associates</h1>
+</header>
+
+<!-- LOGIN -->
+<section id="login">
+  <h2>Acceso al Sistema</h2>
+  <input id="email" placeholder="Correo">
+  <input id="password" type="password" placeholder="Contraseña">
+  <button onclick="login()">Ingresar</button>
+</section>
+
+<!-- APP -->
+<section id="app" class="hidden">
+
+  <!-- REGISTRO CLIENTE -->
+  <div class="card">
+    <h2>Nuevo Cliente</h2>
+    <input id="nombreCliente" placeholder="Nombre completo">
+    <input id="direccionCliente" placeholder="Dirección exacta">
+    <button onclick="guardarCliente()">Guardar Cliente</button>
+  </div>
+
+  <!-- REGISTRO PRÉSTAMO -->
+  <div class="card">
+    <h2>Nuevo Préstamo</h2>
+    <input id="capital" type="number" placeholder="Capital">
+    <input id="interes" type="number" placeholder="% Interés">
+    <select id="tipoPago">
+      <option value="capital">Capital</option>
+      <option value="redito">Rédito</option>
+      <option value="ambos">Ambos</option>
+    </select>
+    <button onclick="crearPrestamo()">Crear Préstamo</button>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="card">
+    <h2>Filtros</h2>
+    <input type="date" id="desde">
+    <input type="date" id="hasta">
+    <button onclick="filtrar()">Filtrar</button>
+  </div>
+
+  <!-- LISTADO -->
+  <div class="card">
+    <h2>Préstamos</h2>
+    <div id="listaPrestamos"></div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="card">
+    <h2>Dashboard Financiero</h2>
+    <canvas id="grafica"></canvas>
+    <div id="resumen"></div>
+  </div>
+
+  <!-- MODAL -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Historial del Préstamo</h3>
+      <div id="historial"></div>
+
+      <canvas id="firmaCanvas" width="400" height="120"></canvas><br>
+      <button onclick="limpiarFirma()">Limpiar Firma</button>
+      <button onclick="generarPDF()">Generar PDF</button>
+      <button onclick="cerrarModal()">Cerrar</button>
+    </div>
+  </div>
+
+</section>
+
+<footer>
+  © 2026 P&A Loans and Associates
+</footer>
+
+<!-- JS -->
+<script src="app.js"></script>
+</body>
+</html>
+
